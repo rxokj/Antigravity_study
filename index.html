@@ -797,28 +797,50 @@
             document.getElementById('stat-month-label').textContent = `${currentYear}년 ${currentMonth+1}월 기록`;
 
             // Top 3 출처
-            const sourceMap = {};
-            quotes.forEach(q => { const s = q.source.trim(); if (s) sourceMap[s] = (sourceMap[s]||0)+1; });
-            const top3 = Object.entries(sourceMap).sort((a,b) => b[1]-a[1]).slice(0,3);
+     
+    function getCategory(source) {
+        const s = source.toLowerCase();
+        if (s.includes('영화')) return '영화';
+        if (s.includes('드라마')) return '드라마';
+        if (s.includes('책') || s.includes('《')) return '책';
+        return '그외';
+}
+      
+    // 카테고리별 통계 데이터 생성
+    const categories = ['영화', '드라마', '책', '그외'];
+    const catMap = { 영화: 0, 드라마: 0, 책: 0, 그외: 0 };
+    const catData = { 영화: [], 드라마: [], 책: [], 그외: [] };
 
-            const listEl = document.getElementById('stats-sources-list');
-            listEl.innerHTML = '';
-            if (top3.length === 0) {
-                const el = document.createElement('div');
-                el.className = 'stats-empty'; el.textContent = '아직 기록된 출처가 없어요';
-                listEl.appendChild(el);
-            } else {
-                top3.forEach(([source, count], i) => {
-                    const item = document.createElement('div');
-                    item.className = 'stats-source-item';
-                    item.innerHTML = `
-                        <span class="source-rank">${RANK_MARKS[i]}</span>
-                        <span class="source-name">${escapeHTML(source)}</span>
-                        <span class="source-count">${count}회</span>`;
-                    listEl.appendChild(item);
-                });
-            }
+    quotes.forEach(q => {
+        const cat = getCategory(q.source);
+        catMap[cat]++;
+        catData[cat].push(q); // 해당 카테고리에 명언 객체 저장
+});
+
+    const listEl = document.getElementById('stats-sources-list');
+    listEl.innerHTML = '';
+
+    categories.forEach(cat => {
+        const count = catMap[cat];
+        const item = document.createElement('div');
+        item.className = 'stats-source-item';
+        item.style.cursor = 'pointer'; // 클릭 가능하게 변경
+        item.innerHTML = `
+            <span class="source-name">${cat}</span>
+            <span class="source-count">${count}회</span>
+    `;
+
+    // 클릭 시 리스트 확인 (알림창 또는 콘솔로 우선 확인 가능)
+    item.onclick = () => {
+        if (count === 0) {
+            alert(`${cat} 분야에 기록된 문장이 없습니다.`);
+        } else {
+            const titles = catData[cat].map(q => `• ${q.text}`).join('\n');
+            alert(`[${cat} 카테고리 목록]\n\n${titles}`);
         }
+    };
+    listEl.appendChild(item);
+});
 
         // ── 달력 날짜 클릭 → 리스트 스크롤 & 하이라이트 ──────────
         function handleDateClick(dateStr) {
