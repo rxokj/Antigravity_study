@@ -922,7 +922,7 @@
                 .filter(q => (q.category || '그 외') === categoryName)
                 .sort((a, b) => {
                     const da = new Date(a.date).getTime(), db = new Date(b.date).getTime();
-                    return db !== da ? db - da : b.createdAt - a.createdAt;
+                    return da !== db ? da - db : a.createdAt - b.createdAt;
                 });
 
             if (filtered.length === 0) {
